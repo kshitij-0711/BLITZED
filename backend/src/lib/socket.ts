@@ -1,0 +1,57 @@
+import { Server, Socket } from "socket.io";
+import http from "http";
+import express from "express";
+import { ENV } from "./env.js";
+import { socketAuthMiddleware } from '../middlewares/socketAuthMiddleware.js';
+
+const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: [ENV.CLIENT_URL || ""],
+    credentials: true,
+  },
+});
+
+// Extend the Socket interface to include custom properties
+interface AuthenticatedSocket extends Socket {
+  userId: string;
+  user: {
+    fullName: string;
+    // Add other user properties as needed
+  };
+}
+
+// apply authentication middleware to all socket connections
+io.use(socketAuthMiddleware);
+
+// we will use this function to check if the user is online or not
+export function getReceiverSocketId(userId: string): string | undefined {
+  return userSocketMap[userId];
+}
+
+// this is for storing online users
+const userSocketMap: Record<string, string> = {}; // {userId: socketId}
+
+io.on("connection", (socket: Socket) => {
+  // Cast socket to AuthenticatedSocket after middleware has run
+  const authSocket = socket as AuthenticatedSocket;
+  
+  console.log("A user connected", authSocket.user.fullName);
+
+  const userId = authSocket.userId;
+  userSocketMap[userId] = authSocket.id;
+
+  // io.emit() is used to send events to all connected clients
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  // with socket.on we listen for events from clients
+  authSocket.on("disconnect", () => {
+    console.log("A user disconnected", authSocket.user.fullName);
+    delete userSocketMap[userId];
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  });
+});
+
+export { io, app, server };
