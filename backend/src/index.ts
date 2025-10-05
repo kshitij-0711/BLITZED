@@ -3,10 +3,10 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import { connectDB } from "./lib/db.js";
 import { app, server } from "./lib/socket.js";
-import cors from 'cors';
+import cors from "cors";
 import authRouter from "./routes/authRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
-import { ENV } from './lib/env.js';
+import { ENV } from "./lib/env.js";
 
 const __dirname = path.resolve();
 const PORT = ENV.PORT || 3000;
@@ -26,7 +26,6 @@ if (ENV.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
-
 
 server.listen(PORT, () => {
   console.log("Server running on port: " + PORT);
