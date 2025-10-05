@@ -7,13 +7,8 @@ import cors from 'cors';
 import authRouter from "./routes/authRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import { ENV } from './lib/env.js';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// const __dirname = path.resolve();
+const __dirname = path.resolve();
 const PORT = ENV.PORT || 3000;
 
 app.use(express.json({ limit: "5mb" })); // req.body
@@ -32,11 +27,8 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
-// @ts-ignore
-server.listen(PORT, '0.0.0.0', () => {
+
+server.listen(PORT, () => {
   console.log("Server running on port: " + PORT);
   connectDB();
-}).on('error', (err) => {
-  console.error('Server failed to start:', err);
-  process.exit(1);
 });
