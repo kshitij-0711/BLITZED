@@ -10,7 +10,28 @@ import { ENV } from "./lib/env.js";
 const PORT = ENV.PORT || 3000;
 
 app.use(express.json({ limit: "5mb" })); // req.body
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+
+// CORS configuration to allow multiple origins
+app.use(cors({ 
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow all Vercel deployments, localhost, and configured CLIENT_URL
+    if (
+      origin.includes('.vercel.app') || 
+      origin === ENV.CLIENT_URL || 
+      origin === 'http://localhost:5173' ||
+      origin === 'http://localhost:3000'
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true 
+}));
+
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);

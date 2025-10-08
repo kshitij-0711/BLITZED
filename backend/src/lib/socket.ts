@@ -9,7 +9,17 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [ENV.CLIENT_URL || ""],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Allow all Vercel deployments and configured CLIENT_URL
+      if (origin.includes('.vercel.app') || origin === ENV.CLIENT_URL || origin === 'http://localhost:5173') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   },
 });
