@@ -3,8 +3,16 @@ import toast from "react-hot-toast";
 import { io, Socket } from "socket.io-client";
 import { axiosInstance } from "../lib/axios";
 
-const BASE_URL =
-  import.meta.env.MODE === "development" ? "http://localhost:3000" : "/";
+// Get the base URL from environment variable, removing /api suffix if present
+const getBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) {
+    return apiUrl.replace('/api', '');
+  }
+  return "http://localhost:3000";
+};
+
+const BASE_URL = getBaseUrl();
 
 interface User {
   _id: string;
